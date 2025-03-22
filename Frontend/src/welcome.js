@@ -14,6 +14,7 @@ class Welcome extends React.Component {
         super();
         this.state = {
             email: "",
+            emailError: "",
             password: "",
             username: "",
             email_for_registration: "",
@@ -39,47 +40,106 @@ class Welcome extends React.Component {
             [e.target.name]: e.target.value
         });
     }
+    /*validateEmail() {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailPattern.test(this.state.email_for_registration)) {
+            this.setState({ emailError: "Invalid email format" });
+        } else {
+            this.setState({ emailError: "" });
+        }
+    }*/
+        validateEmail = () => {
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        
+            this.setState((prevState) => {
+                const newEmailError = !emailPattern.test(prevState.email_for_registration)
+                    ? "Invalid email format"
+                    : "";
+        
+                console.log("Updating Email Error:", newEmailError);  // ✅ Debugging
+                return { emailError: newEmailError };
+            });
+        };
+        
+        
+    /*validateEmail = () => {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(this.state.email_for_registration)) {
+                this.setState({ emailError: "Invalid email format" });
+        } else {
+                this.setState({ emailError: "" });
+            }
+        };*/
 
     //This function converts the text to speech
-    text2speech(text) {
+    /*text2speech(text) {
         synth.cancel()
         var utterThis = new SpeechSynthesisUtterance(text);
         synth.speak(utterThis);
-    }
+    }*/
+        text2speech(text) {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();  // Stop any ongoing speech
+            }
+        
+            setTimeout(() => {
+                var utterThis = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterThis);
+            }, 500);  // Delay to ensure smooth playback
+        }
+        
 
     //When login button is pressed, this method is called. It sends the login info to backend
     handleLoginSubmit(e) {
         if (e) {
             e.preventDefault();
         }
-        Axios.post("/auth/login", {"address": this.state.email, "password": this.state.password}).then((req) => {
+    
+        console.log("Submitting login request with:", {
+            address: this.state.email,
+            password: this.state.password
+        });
+    
+        Axios.post("/auth/login", {
+            address: this.state.email,
+            password: this.state.password
+        })
+        .then((req) => {
+            console.log("Server response:", req.data);  // ✅ Debugging
+    
             if (req.data.code === SUCCESS) {
-                this.props.ask_auth()
+                this.props.ask_auth();
             } else {
-                alert(req.data.detail)
-                this.text2speech(req.data.detail)
-
-                //States will be emptied
+                alert(req.data.detail);
+                this.text2speech(req.data.detail);
+                
+                // ✅ Debugging: Check if setState is resetting values correctly
+                console.log("Resetting state...");
+                
                 this.setState({
                     email: "",
                     password: "",
                     email_for_registration: "",
                     username: "",
                     password_for_registration: ""
-
-                })
-
-                allText = []
+                });
+    
+                allText = [];
             }
         })
+        .catch((error) => {
+            console.error("Login request failed:", error);
+            alert("An error occurred while logging in.");
+        });
     }
+    
 
     //When sign up button is pressed, this method is called. It sends the sign up info to backend
     handleSignSubmit(e) {
         if (e){
             e.preventDefault();
         }
-        Axios.post("/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password_for_registration}).then((req) => {
+        Axios.post("api/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password_for_registration}).then((req) => {
             if (req.data.code === SUCCESS) {
                 this.props.ask_auth()
             } else {
@@ -133,30 +193,26 @@ class Welcome extends React.Component {
     //This function ends the speech to text process and speech will be saved
     handleEnd(err, text) {
 
-        console.log(text)
-        if (!err) {
-            if (text.toLowerCase().replace(/ /g, "") === "restart") {
-                allText = []
-                this.setState({
-                    listening: false
-                })
-                return;
-            }
-            if (text === "") {
-                this.setState({
-                    listening: false
-                })
-                return;
-            }
-            this.setState({
-                text: text
-            })
-        } else {
-            console.log(err)
+        console.log("Speech recognition result:", text);
+        if (err) {
+            console.log("Speech recognition error:", err);
+            this.setState({ listening: false });
+            return;
         }
-        this.setState({
-            listening: false
-        })
+    
+        if (!text || text.trim() === "") {  // ✅ Handles both null and empty text
+            console.log("No speech detected or empty input.");
+            this.setState({ listening: false });
+            return;
+        }
+    
+        if (text.toLowerCase().replace(/ /g, "") === "restart") {
+            allText = [];
+            this.setState({ listening: false });
+            return;
+        }
+    
+        this.setState({ text: text, listening: false });  // ✅ Combined state update
 
         //All speeches are kept into this array
         allText.push(text)
@@ -194,14 +250,23 @@ class Welcome extends React.Component {
         }
     }
     
+    //Voice assistant welcomes the user in the initial load
+    /*componentDidMount() {
+        this.setState({ initial: false }, () => {
+            this.text2speech("Welcome To The Voice Based Email System. Please hit the spacebar to listen to the voice assistant");
+        },500);
+    }*/
+    componentDidMount() {
+        this.setState({ initial: false }, () => {
+            setTimeout(() => {
+                this.text2speech("Welcome To The Voice Based Email System. Please hit the spacebar to listen to the voice assistant");
+            }, 500);
+        });
+        //Ensure spacebar listener is always attached
+        document.addEventListener("keydown", this.handleClick);
+    }
+    
     render() {
-        //Voice assistant welcomes the user in the initial load
-        if (this.state.initial === true) {
-            this.setState({
-                initial: false
-            })
-            this.text2speech("Welcome To The Voice Based Email System. Please hit the spacebar to listen voice assistant")
-        } 
        
         return (
 
@@ -263,18 +328,22 @@ class Welcome extends React.Component {
                                     className="form-input"
                                     type="email"
                                     placeholder="Email"
-                                    onChange={this.handleChange}
-                                    value={this.state.registrationmail}
                                     name="email_for_registration"
-                                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,14}$"
+                                    value={this.state.email_for_registration}
+                                    onChange={this.handleChange}
+                                    onBlur={this.validateEmail}  // ✅ Validate email when user finishes typing
                                     required
                                 />
+                                <span style={{ color: "red", fontSize: "14px" }}>
+                                    {this.state.emailError}
+                                </span>  {/* ✅ Show error message */}
                             </div>
+
                             Username
                             <div className="form-group">
                                 <input
                                     className="form-input"
-                                    type=""
+                                    type="text"
                                     placeholder="Username"
                                     onChange={this.handleChange}
                                     value={this.state.username}

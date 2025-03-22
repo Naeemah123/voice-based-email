@@ -91,9 +91,24 @@ class Spell2Text extends React.Component {
         this.props.onEnd(null, first_letters.join(""))
     }
 
-    recognition.onerror = event => {
-      this.props.onEnd(event.error, null)
-    }
+    recognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+  
+      // ✅ Handle different errors
+      if (event.error === "network") {
+          console.log("Network error occurred. Check your internet connection.");
+      } else if (event.error === "not-allowed") {
+          console.log("Microphone access denied. Please allow microphone permissions.");
+      } else if (event.error === "aborted") {
+          console.log("Speech recognition aborted.");
+      } else if (event.error === "no-speech") {
+          console.log("No speech detected. Please try again.");
+      }
+  
+      // ✅ Reset state to prevent getting stuck
+      this.setState({ started: false, listening: false });
+  };
+  
   }
   render() {
     return (<div></div>);

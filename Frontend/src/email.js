@@ -5,7 +5,6 @@ import Axios from 'axios';
 import { SUCCESS } from './error_codes.js';
 import Speech2Text from "./s2t.js";
 import Spell2Text from "./spell2text.js"
-
 var synth = window.speechSynthesis //for text to speech
 var allText = []        //Keeps the user sayings
 var sendingInfo = []    
@@ -78,7 +77,7 @@ class Email extends React.Component {
 
     //This function is for receiving inbox emails from backend
     get_emails() {
-        Axios.post("/email/fetch_emails", {"search": "INBOX"}).then((req) => {
+        Axios.post("api/email/fetch_emails", {"search": "INBOX"}).then((req) => {
             if (req.data.code === SUCCESS){
                 this.setState({
                     InboxMails: req.data.data
@@ -260,24 +259,41 @@ class Email extends React.Component {
     //This function provide a connection between the database to send email
     handleSendSubmit(e) {
         if (e) {
-            e.preventDefault()
+            e.preventDefault();
         }
-        Axios.post("/email/send_email", {"subject": this.state.subject_to_send,
-          "to": this.state.email_to_send, "content": this.state.message_to_send}).then((req) => {
-              if (req.data.code === SUCCESS) {
-                  console.log(req)
-                  this.setState({
-                      email_to_send: "",
-                      message_to_send: "",
-                      subject_to_send: ""
-                  })
-                  alert(req.data.detail)
-              } else {
-                console.log(req)
-                alert(req.data.detail)
-              }
-          })
+    
+        console.log("Sending email with:", {
+            to: this.state.email_to_send,
+            subject: this.state.subject_to_send,
+            content: this.state.message_to_send
+        });
+    
+        Axios.post("/api/email/send_email", {
+            subject: this.state.subject_to_send,
+            to: this.state.email_to_send,
+            content: this.state.message_to_send
+        })
+        .then((req) => {
+            console.log("Server response:", req.data);  // ✅ Debugging
+    
+            if (req.data.code === SUCCESS) {
+                alert("✅ Email Sent Successfully!");
+            } else {
+                alert("❌ Error: " + (typeof req.data.detail === "string" ? req.data.detail : JSON.stringify(req.data.detail)));
+            }
+    
+            this.setState({
+                email_to_send: "",
+                message_to_send: "",
+                subject_to_send: ""
+            });
+        })
+        .catch((error) => {
+            console.error("Email send failed:", error);
+            alert("❌ Error sending email. Check console for details.");
+        });
     }
+    
 
     //When the user is pressed the space, the voice assistant starts to inform about the options
     handleClick(e) {
