@@ -100,22 +100,25 @@ class Welcome extends React.Component {
             password: this.state.password
         });
     
-        Axios.post("/auth/login", {
+        Axios.post("http://localhost:8080/api/auth/login", {
             address: this.state.email,
             password: this.state.password
-        })
+        }, { withCredentials: true })
         .then((req) => {
-            console.log("Server response:", req.data);  // ✅ Debugging
+            console.log("Server response:", req.data);
     
-            if (req.data.code === SUCCESS) {
-                this.props.ask_auth();
+            if (req.data.code === 200) {  // ✅ Ensure SUCCESS is correctly checked
+                console.log("✅ Login successful, calling ask_auth()");
+                this.setState(
+                    { email: "", password: "" },  // ✅ Clears login fields after success
+                    () => this.props.ask_auth()  // ✅ Calls ask_auth AFTER state updates
+                );
             } else {
+                console.error("❌ Login failed:", req.data.detail);
                 alert(req.data.detail);
                 this.text2speech(req.data.detail);
-                
-                // ✅ Debugging: Check if setState is resetting values correctly
+    
                 console.log("Resetting state...");
-                
                 this.setState({
                     email: "",
                     password: "",
@@ -133,34 +136,40 @@ class Welcome extends React.Component {
         });
     }
     
+    
 
     //When sign up button is pressed, this method is called. It sends the sign up info to backend
     handleSignSubmit(e) {
-        if (e){
+        if (e) {
             e.preventDefault();
         }
-        Axios.post("api/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password_for_registration}).then((req) => {
+        
+        Axios.post("http://localhost:8080/api/auth/sign_in", { 
+            address: this.state.email_for_registration, 
+            username: this.state.username, 
+            password: this.state.password_for_registration 
+        })
+        
+        .then((req) => {
             if (req.data.code === SUCCESS) {
-                this.props.ask_auth()
-            } else {
-                alert(req.data.detail)
-                this.text2speech(req.data.detail)
-
-                //States will be emptied
+                alert("✅ Sign-up successful! You can now log in.");
+                this.text2speech("Sign-up successful! You can now log in.");
                 this.setState({
-                    email: "",
-                    password: "",
                     email_for_registration: "",
                     username: "",
                     password_for_registration: ""
-
-
-
-                })
-                allText = []
+                });
+            } else {
+                alert("❌ Sign-up failed: " + req.data.detail);
+                this.text2speech(req.data.detail);
             }
         })
+        .catch((error) => {
+            console.error("Sign-up error:", error);
+            alert("❌ Sign-up failed. Please try again later.");
+        });
     }
+    
 
     //When user is pressed the space key, voice assistant starts to inform user about options
     handleClick(e) {
@@ -288,15 +297,17 @@ class Welcome extends React.Component {
                         <form onSubmit={this.handleLoginSubmit}>
                             Email
                             <div className="form-group">
-                                <input
-                                    className="form-input"
-                                    type="email" placeholder="Email"
-                                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,14}$"
-                                    name="email"
-                                    onChange={this.handleChange}
-                                    value={this.state.email}
-                                    required
-                                />
+                            <input
+                                className="form-input"
+                                type="email"
+                                placeholder="Email"
+                                name="email"
+                                value={this.state.email}
+                                onChange={this.handleChange}
+                                required
+                            />
+
+
                             </div>
                             Password
                             <div className="form-group">

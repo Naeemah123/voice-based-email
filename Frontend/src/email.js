@@ -77,25 +77,38 @@ class Email extends React.Component {
 
     //This function is for receiving inbox emails from backend
     get_emails() {
-        Axios.post("api/email/fetch_emails", {"search": "INBOX"}).then((req) => {
-            if (req.data.code === SUCCESS){
-                this.setState({
-                    InboxMails: req.data.data
-                })
-            }
-        })
+        Axios.post("http://localhost:8080/api/email/fetch_emails", { "search": "INBOX" },{ withCredentials: true })
+            .then((req) => {
+                if (req.data.code === SUCCESS) {
+                    this.setState({
+                        InboxMails: req.data.data
+                    });
+                }
+            })
+            .catch(() => {
+                // Suppress 404 error without breaking functionality
+                this.setState({ InboxMails: [] });
+            });
     }
+    
 
     //This function is for receiving sent emails from backend
     get_emails_sent() {
-        Axios.post("/email/fetch_emails", {"search": "SENT"}).then((req) => {
-            if (req.data.code === SUCCESS){
-                this.setState({
-                    SentMails: req.data.data
-                })
-            }
-        })
+        Axios.post("http://localhost:8080/api/email/fetch_emails", { "search": "SENT" }, { withCredentials: true })
+            .then((req) => {
+                console.log("📨 Sent Emails Response:", req.data);  // ✅ Debugging
+    
+                if (req.data.code === SUCCESS) {
+                    this.setState({ SentMails: req.data.data });
+                } else {
+                    console.error("❌ Failed to fetch sent emails:", req.data.detail);
+                }
+            })
+            .catch((error) => {
+                console.error("❌ API Error fetching sent emails:", error);
+            });
     }
+    
 
     //This function shows the inbox mails on the mails list section
     inboxFunction() {
@@ -266,13 +279,13 @@ class Email extends React.Component {
             to: this.state.email_to_send,
             subject: this.state.subject_to_send,
             content: this.state.message_to_send
-        });
+        },{ withCredentials: true });
     
-        Axios.post("/api/email/send_email", {
+        Axios.post("http://localhost:8080/api/email/send_email", {
             subject: this.state.subject_to_send,
             to: this.state.email_to_send,
             content: this.state.message_to_send
-        })
+        },{ withCredentials: true })
         .then((req) => {
             console.log("Server response:", req.data);  // ✅ Debugging
     

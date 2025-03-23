@@ -12,19 +12,28 @@ class App extends React.Component {
     }
     this.check_auth = this.check_auth.bind(this);
   }
-  check_auth(){
-      Axios.get("/auth/fetch_user").then((req) => {
-        if (req.data.code === SUCCESS) {
-          this.setState({
-            auth: true
-          })
-        } else {
-          this.setState({
-            auth: false
-          })
-        }
-      })
-  }
+  check_auth() {
+    Axios.get("http://localhost:8080/api/auth/fetch_user",{ withCredentials: true })
+        .then((req) => {
+            console.log("Auth Check Response:", req.data);  // ✅ Debugging
+
+            if (req.data.code === 200) {  // ✅ Ensuring correct success check
+                this.setState({ auth: true }, () => {
+                    console.log("✅ User authenticated, updating UI...");
+                });
+            } else {
+                this.setState({ auth: false }, () => {
+                    console.log("❌ Not authenticated, showing login page...");
+                });
+            }
+        })
+        .catch((error) => {
+            console.error("❌ Auth check failed:", error.message);
+            this.setState({ auth: false });
+        });
+}
+
+
 
   componentDidMount(){
     this.check_auth()

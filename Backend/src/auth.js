@@ -49,68 +49,80 @@ exports.sign_in = function(req, response) {
 //Login function to check credentials and configure sessions accordingly
 exports.login = function(req, response) {
     const body = req.body;
-    //fetch data from json
     const password = body["password"];
     const address = body["address"];
     const hash = computeSHA256(password);
-    //Execute a select querry
+
     pool.query("SELECT username FROM users WHERE hash = $1 AND address = $2", [hash, address], (err, res) => {
         if (err) {
-            //Error due to database, e.g. connection failure
-            console.log(err)
+            console.log("Database error:", err);
             response.send({
                 code: err.code,
                 detail: err.detail,
                 data: null
-            })
+            });
         } else {
-            if (res.rows.length === 0){
-                //Could not matched any account 
+            if (res.rows.length === 0) {
                 response.send({
                     code: NOT_FOUND,
                     detail: "Email address or the password is invalid",
                     data: null
-                })
+                });
             } else {
-                //Set cookie
-                sess=req.session;
-                sess.address = address;
-                sess.password = password;
-                sess.username = res.rows[0]["username"];
-                //Success Response
-                response.send({
-                    code: SUCCESS,
-                    detail: "Success",
-                    data: null
-                })
+                // Set session details
+                req.session.address = address;
+                req.session.password = password;
+                req.session.username = res.rows[0]["username"];
+                // Explicitly save the session
+                req.session.save((saveErr) => {
+                    if (saveErr) {
+                        console.log("Session save error:", saveErr);
+                        response.send({
+                            code: UNEXPECTED,
+                            detail: "Session save error",
+                            data: null
+                        });
+                    } else {
+                        console.log("Session saved successfully", req.session);
+                        response.send({
+                            code: SUCCESS,
+                            detail: "Success",
+                            data: null
+                        });
+                    }
+                });
             }
         }
-    })
-}
+    });
+};
+
+
+
 
 
 //Function to check if user authenticated
 exports.fetch_user = function(req, response) {
-    if(req.session.address) {
-        const sess =  req.session;
-        //Session is valid return success response
+    console.log("🔍 Checking session:", req.session);  // ✅ Debugging
+
+    if (req.session && req.session.address) {  // ✅ Ensure session exists
         response.send({
-            code: SUCCESS,
+            code: 200,  // ✅ Use 200 instead of SUCCESS for clarity
             detail: "Success",
             data: {
-                username: sess.username,
-                address: sess.address
+                username: req.session.username,
+                address: req.session.address
             }
-        })
+        });
     } else {
-        //Session is null, user not logged in yet
+        console.log("❌ Session not found!");
         response.send({
-            code: NOT_AUTH,
+            code: 2,  // ✅ Use 2 instead of NOT_AUTH for clarity
             detail: "user not authenticated",
             data: null
-        })
+        });
     }
-}
+};
+
 
 //Delete the request senders account
 exports.delete_user = function(req, response) {

@@ -4,193 +4,253 @@ inspect = require('util').inspect;
 const Gmail = require('gmail-send');
 const simpleParser = require('mailparser').simpleParser;
 const {SUCCESS, NOT_AUTH, UNEXPECTED} = require("./error_codes.js");
+const { pool } = require("./db.js");
 
-
-//Fetch emails from folder indicated at req.body["search"] (either "SENT" or "INBOX")
+// Fetch emails from database
 exports.fetch_emails = function(req, response) {
     if (req.session.address) {
-        get_emails(new Imap({
-            user: req.session.address,
-            password: req.session.password, 
-            host: 'imap.gmail.com', 
-            port: 993,
-            tlsOptions: {
-            rejectUnauthorized: false
-            },
-            tls: true
-        }), req.body["search"], (emails) => {
-            //Success Response
-            response.send( {
-                code: SUCCESS,
-                detail: "Success",
-                data: emails
-            })
-        })
-    } else {
-        //Session is null so user is not authenticated yet
-        response.send({
-            code: NOT_AUTH,
-            detail: "user not authenticated",
-            data: null
-        })
-    }
-}
+        const search = req.body["search"];
+        
+        if (search === "SENT") {
+            console.log("📨 Fetching Sent Emails for:", req.session.address);  // ✅ Debugging
 
-//Send email using gmail-send package
-exports.send_email = function(req, response) {
-    if (req.session.address) {
-        //Extract necessary information from request body
-        const body = req.body;
-        const subject = body["subject"];
-        const to = body["to"];
-        const content = body["content"]
-        write_email({
-            //Exctract credentials from the session
-            user: req.session.address,
-            pass: req.session.password,
-            to:   to,
-            subject: subject
-        }, content, (err, res) => {
-            if (err) {
-                //Fails if user supplied wrong password on sign in
-                response.send({
-                    code: UNEXPECTED,
-                    detail: err,
-                    data: null
-                })
-            } else {
-                //Success response
+            pool.query("SELECT recipient AS target, subject, content FROM sent_emails WHERE sender = $1",
+                [req.session.address], (err, res) => {
+                    if (err) {
+                        console.error("❌ Database Fetch Error:", err);
+                        response.send({
+                            code: UNEXPECTED,
+                            detail: err.detail,
+                            data: null
+                        });
+                    } else {
+                        console.log("✅ Fetched Sent Emails:", res.rows);  // ✅ Debugging
+                        response.send({
+                            code: SUCCESS,
+                            detail: "Success",
+                            data: res.rows
+                        });
+                    }
+                }
+            );
+        } 
+        // ✅ Fetch emails from the database instead of IMAP
+        else if (search === "INBOX") {
+            console.log("📥 Fetching Inbox Emails for:", req.session.address);  // ✅ Debugging
+
+            pool.query("SELECT sender AS target, subject, content FROM received_emails WHERE recipient = $1",
+                [req.session.address], (err, res) => {
+                    if (err) {
+                        console.error("❌ Database Fetch Error:", err);
+                        response.send({
+                            code: UNEXPECTED,
+                            detail: err.detail,
+                            data: null
+                        });
+                    } else {
+                        console.log("✅ Fetched Inbox Emails:", res.rows);  // ✅ Debugging
+                        response.send({
+                            code: SUCCESS,
+                            detail: "Success",
+                            data: res.rows
+                        });
+                    }
+                }
+            );
+        } 
+        // ✅ If no database, fallback to IMAP
+        else {
+            console.log("📥 Fetching Inbox Emails via IMAP for:", req.session.address);
+            get_emails(new Imap({
+                user: req.session.address,
+                password: req.session.password, 
+                host: 'imap.gmail.com', 
+                port: 993,
+                tlsOptions: { rejectUnauthorized: false },
+                tls: true
+            }), search, (emails) => {
                 response.send({
                     code: SUCCESS,
                     detail: "Success",
-                    data: null
-                })
-
-            }
-        })
-
+                    data: emails
+                });
+            });
+        }
     } else {
-        //Session is null so user is not authenticated yet
+        console.log("❌ User not authenticated when fetching emails.");  // ✅ Debugging
         response.send({
             code: NOT_AUTH,
-            detail: "user not authenticated",
+            detail: "User not authenticated",
             data: null
-        })
+        });
     }
-}
+};
 
 
-//Local function used by send_email
+// Send email function
+exports.send_email = function(req, response) {
+    if (req.session.address) {
+        const body = req.body;
+        const subject = body["subject"];
+        const to = body["to"];
+        const content = body["content"];
+
+        console.log("📩 Storing email in DB:", {  // ✅ Debugging
+            sender: req.session.address,
+            recipient: to,
+            subject: subject,
+            content: content
+        });
+
+        // Store email in "sent_emails"
+        pool.query("INSERT INTO sent_emails (sender, recipient, subject, content) VALUES ($1, $2, $3, $4)",
+            [req.session.address, to, subject, content], (err, res) => {
+                if (err) {
+                    console.error("❌ Database Insert Error (sent_emails):", err);
+                    return response.send({
+                        code: UNEXPECTED,
+                        detail: err.detail,
+                        data: null
+                    });
+                } 
+                
+                console.log("✅ Email stored in sent_emails");  // ✅ Debugging
+
+                // ✅ Also store email in "received_emails"
+                pool.query("INSERT INTO received_emails (sender, recipient, subject, content) VALUES ($1, $2, $3, $4)",
+                    [req.session.address, to, subject, content], (err2, res2) => {
+                        if (err2) {
+                            console.error("❌ Database Insert Error (received_emails):", err2);
+                            return response.send({
+                                code: UNEXPECTED,
+                                detail: err2.detail,
+                                data: null
+                            });
+                        } 
+
+                        console.log("✅ Email stored in received_emails");  // ✅ Debugging
+                        response.send({
+                            code: SUCCESS,
+                            detail: "Email stored successfully",
+                            data: null
+                        });
+                    }
+                );
+            }
+        );
+    } else {
+        response.send({
+            code: NOT_AUTH,
+            detail: "User not authenticated",
+            data: null
+        });
+    }
+};
+
+
+
+// Local function used by send_email
 function write_email(options, content, callback) {
-    const send = Gmail(options)
-    send({text: content, }, (error, result, fullResult) => {
+    const send = Gmail(options);
+    send({ text: content }, (error, result, fullResult) => {
         if (error) {
             callback(error, null);
-        } 
-        else {
+        } else {
             callback(null, result);
         }
-    })
+    });
 }
 
-//Local helper for fetch_emails functions
-function get_emails(imap, search_str,callback) {
-    var emails = []
+// Local helper for fetch_emails functions
+function get_emails(imap, search_str, callback) {
+    var emails = [];
+
     function openBox(cb) {
-        //Open the requested box (email folder "Sent emails" or "Inbox")
         imap.getBoxes((err, boxes) => {
             console.log(boxes);
             if (search_str === "SENT") {
-                var objs = boxes["[Gmail]"].children
-                //API is language dependend so sent emails box cannot be address directly as "Sent Mails"
-                //For example, Turkish users have "Gönderilmiş Postalar" folder
-                //So iterate over all boxes to find the correct one by checking attributes
+                var objs = boxes["[Gmail]"].children;
                 for (let key of Object.keys(objs)) {
                     if (objs[key].attribs[1] === "\\Sent") {
-                        console.log("[Gmail]/" + key.trim(), ":",objs[key].attribs[1])
+                        console.log("[Gmail]/" + key.trim(), ":", objs[key].attribs[1]);
                         imap.openBox("[Gmail]/" + key.trim(), true, cb);
                     }
-    
                 }
             } else {
                 imap.openBox("INBOX", true, cb);
             }
-        })
-        
+        });
     }
-      
-    imap.once('ready', function() {
-    openBox(function(err, box) {
-    if (err) throw err;
 
-    //Get ALL emails in the box
-    imap.search(['ALL'], function(err, results) { 
-        if (err) throw err;
+    imap.once('ready', function () {
+        openBox(function (err, box) {
+            if (err) throw err;
 
-        var f = imap.fetch(results, { bodies: '' });
-        f.on('message', function(msg, seqno) {
-        console.log('Message #%d', seqno); 
-        var prefix = '(#' + seqno + ') ';
+            imap.search(['ALL'], function (err, results) {
+                if (err) throw err;
 
-        //Logic of handling data stream 
-        msg.on('body', function(stream, info) {
-            console.log(prefix + 'Body');
-            const chunks = [];
-            //Push received chunks to an array
-            stream.on("data", function (chunk) {
-                chunks.push(chunk);
+                var f = imap.fetch(results, { bodies: '' });
+                f.on('message', function (msg, seqno) {
+                    console.log('Message #%d', seqno);
+                    var prefix = '(#' + seqno + ') ';
+
+                    msg.on('body', function (stream, info) {
+                        console.log(prefix + 'Body');
+                        const chunks = [];
+                        stream.on("data", function (chunk) {
+                            chunks.push(chunk);
+                        });
+
+                        stream.on("end", function () {
+                            simpleParser(Buffer.concat(chunks).toString(), (err, mail) => {
+                                var target, subject, content;
+                                if (search_str === "INBOX") {
+                                    target = mail.from.text;
+                                    subject = mail.subject;
+                                    content = mail.text;
+                                } else {
+                                    target = mail.to.text;
+                                    subject = mail.subject;
+                                    content = mail.text;
+                                }
+                                emails.push({
+                                    target: target,
+                                    subject: subject,
+                                    content: content
+                                });
+                            });
+                        });
+                    });
+
+                    msg.once('attributes', function (attrs) {
+                        console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
+                    });
+
+                    msg.once('end', function () {
+                        console.log(prefix + 'Finished');
+                    });
+                });
+
+                f.once('error', function (err) {
+                    console.log('Fetch error: ' + err);
+                });
+
+                f.once('end', function () {
+                    console.log('Done fetching all messages!');
+                    imap.end();
+                });
             });
+        });
+    });
 
-            stream.on("end", function () {
-                //On End, concat the chunks, convert to string and parse using simpleParser
-                simpleParser(Buffer.concat(chunks).toString(), (err, mail) => {
-                    var target, subject, content;
-                    //Inbox and Sent mails parsed differently
-                    if (search_str === "INBOX") {
-                        target = mail.from.text;
-                        subject = mail.subject;
-                        content = mail.text;
-                    } else {
-                        target = mail.to.text;
-                        subject = mail.subject;
-                        content = mail.text;
-                    }
-                    //Push parsed emails to the array 
-                    emails.push({
-                        target: target,
-                        subject: subject,
-                        content: content
-                    })
-                })
-            });
-        });
+    imap.once('error', function (err) {
+        console.log(err);
+    });
 
-        msg.once('attributes', function(attrs) {
-            console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
-        });
-        msg.once('end', function() {
-            console.log(prefix + 'Finished');
-        });
-        });
-        f.once('error', function(err) {
-        console.log('Fetch error: ' + err);
-        });
-        f.once('end', function() {
-        console.log('Done fetching all messages!');
-        imap.end();
-        });
-    });
-    });
-    });
-    
-    imap.once('error', function(err) {
-    console.log(err);
-    });
-    
-    imap.once('end', function() {
+    imap.once('end', function () {
         console.log('Connection ended');
-        callback(emails)
+        callback(emails);
     });
-    
-    imap.connect(); 
+
+    imap.connect();
 }
