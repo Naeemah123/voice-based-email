@@ -1,13 +1,4 @@
 import React from 'react';
-
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-const recognition = new SpeechRecognition()
-
-recognition.continous = true
-recognition.interimResults = false
-recognition.lang = 'en-US'
-
 var a=new AudioContext() // browsers limit the number of concurrent audio contexts, so you better re-use'em
 function beep(vol, freq, duration){
  var v=a.createOscillator()
@@ -24,6 +15,10 @@ function beep(vol, freq, duration){
 class Speech2Text extends React.Component {
   constructor() {
     super()
+    this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)()
+    this.recognition.continuous = true
+    this.recognition.interimResults = false
+    this.recognition.lang = 'en-US'
     this.state = {
       listening: false,
       started: false,
@@ -40,6 +35,10 @@ class Speech2Text extends React.Component {
 
   componentWillUnmount() {
     document.removeEventListener("keyup", this.toggleListen)
+    // ADD this code:
+    if (this.state.started) {
+      this.recognition.stop()
+    }
   }
 
   toggleListen(event) {
@@ -59,35 +58,50 @@ class Speech2Text extends React.Component {
   handleListen(){
     if (this.state.listening) {
       if (!this.state.started) {
-        recognition.start()
+        this.recognition.start()
         this.setState({started: true})
         this.props.onStart()
-        recognition.onend = () => {
+        this.recognition.onend = () => {
           console.log("...continue listening...")
-          recognition.start()
+          this.recognition.start()
         }
       }
     } else {
-      recognition.stop()
-      recognition.onend = () => {
+      this.recognition.stop()
+      this.recognition.onend = () => {
         this.setState({started: false})
         console.log("Stopped Listening per click")
       }
     }
 
-    recognition.onstart = () => {
+    this.recognition.onstart = () => {
       console.log("Listening!")
     }
 
-    recognition.onresult = (event) => {
+    /*this.recognition.onresult = (event) => {
         var transcript = event.results[0][0].transcript
         this.setState({
           listening: false
         })
         this.props.onEnd(null, transcript)
-    }
+    }*/
+        this.recognition.onresult = (event) => {
+          console.log("Full recognition event:", event);
+          const transcript = event.results[0][0].transcript.trim();
+      
+          // Prevent repeating the last recognized phrase
+          if (transcript !== this.state.text) {
+              this.setState({ text: transcript, listening: false });
+              this.props.onEnd(null, transcript);
+          } else {
+              console.log("Duplicate input detected, ignoring...");
+          }
+      };
 
-    recognition.onerror = event => {
+      
+      
+
+    this.recognition.onerror = event => {
       this.props.onEnd(event.error, null)
     }
   }

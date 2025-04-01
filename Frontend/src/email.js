@@ -111,7 +111,60 @@ class Email extends React.Component {
     
 
     //This function shows the inbox mails on the mails list section
+    // Modified inboxFunction that reads a summary and asks for an index.
     inboxFunction() {
+        const list = this.state.InboxMails.map((item, index) => 
+          <tr key={index} onClick={() => this.mailContent(item, 0)}>
+            <td>{item.target}</td>
+            <td>{item.subject}</td>
+          </tr>
+        );
+      
+        this.setState({
+          mailsContent: list,
+          mail_list_header1: "From",
+          mail_list_header2: "Subject",
+          readingInboxIndex: true  // Flag indicating inbox index selection mode
+        }, () => {
+          if (this.state.InboxMails.length > 0) {
+            const firstEmail = this.state.InboxMails[0];
+            const speechText = `Inbox emails loaded. You have ${this.state.InboxMails.length} emails. The index starts with 00 for the first email, 01 for the second, and so on. Please say the index number of the email you want me to read. For example, say 00 for the first email which is from ${firstEmail.target} with subject ${firstEmail.subject}.`;
+            this.text2speech(speechText);
+          } else {
+            this.text2speech("Inbox emails loaded but your inbox is empty.");
+            this.setState({ readingInboxIndex: false });
+          }
+        });
+      }
+      
+    
+   /* inboxFunction() {
+    const list = this.state.InboxMails.map((item, index) => 
+    
+        <tr key={index} onClick={() => this.mailContent(item, 0)}>
+            <td>{item.target}</td>
+            <td>{item.subject}</td>
+        </tr>
+    );
+
+    this.setState({
+        mailsContent: list,
+        mail_list_header1: "From",
+        mail_list_header2: "Subject",
+        readingInboxIndex: true  // Set flag to wait for an index response
+    }, () => {
+        if (this.state.InboxMails.length > 0) {
+            const firstEmail = this.state.InboxMails[0];
+            const speechText = `Inbox emails loaded. You have ${this.state.InboxMails.length} emails. For example, the first email is from ${firstEmail.target} with subject ${firstEmail.subject}. Please say the index number of the email you want me to read.`;
+            this.text2speech(speechText);
+        } else {
+            this.text2speech("Inbox emails loaded but your inbox is empty.");
+            this.setState({ readingInboxIndex: false });
+        }
+    });
+}*/
+
+    /*inboxFunction() {
         //This function is for listing mails that are received.
         const list = this.state.InboxMails.map((item, index) => 
      
@@ -128,10 +181,36 @@ class Email extends React.Component {
             mail_list_header2: "Subject"
         });
 
-    }
+    }*/
 
     //This function shows the sent mails on the mails list section
     sentFunction() {
+        const list = this.state.SentMails.map((item, index) =>
+          <tr key={index} onClick={() => this.mailContent(item, 1)}>
+            <td>{item.target}</td>
+            <td>{item.subject}</td>
+          </tr>
+        );
+      
+        this.setState({
+          mailsContent: list,
+          mail_list_header1: "To",
+          mail_list_header2: "Subject",
+          readingSentIndex: true  // Flag indicating sent emails index selection mode
+        }, () => {
+          if (this.state.SentMails.length > 0) {
+            const firstEmail = this.state.SentMails[0];
+            const speechText = `Sent emails loaded. You have ${this.state.SentMails.length} emails. The index starts with 00 for the first email, 01 for the second, and so on. Please say the index number of the email you want me to read. For example, say 00 for the first email which is to ${firstEmail.target} with subject ${firstEmail.subject}.`;
+            this.text2speech(speechText);
+          } else {
+            this.text2speech("Sent emails loaded but you have no sent emails.");
+            this.setState({ readingSentIndex: false });
+          }
+        });
+      }
+      
+      
+    /*sentFunction() {
 
         //This function is for listing mails that are sent.
 
@@ -150,7 +229,7 @@ class Email extends React.Component {
            mail_list_header2: "Subject"
         });
 
-    }
+    }*/
 
     //This function is for displaying the content of the selected mail
     mailContent(item, id) {
@@ -190,9 +269,15 @@ class Email extends React.Component {
 
     //This function changes the mail content div to be able to send a mail, it gives a form: "mail to send", "subject to send" and "message to send"
     sendMail() {
+        // Set the flag to show the send-mail form and reset the step.
+        this.setState({ sendEmail: true, step: 0 });
+      }
+      
+    
+    /*sendMail() {
 
         this.setState({
-            mailBody: 
+            mailBody:               
        <form className="form-horizontal" action="#forms" onSubmit={this.handleSendSubmit}>
             <div className="form-group">
             <div className="col-3 col-sm-12">
@@ -238,16 +323,29 @@ class Email extends React.Component {
                     <button className="btn btn-lg" id= "sendemail_button" type="submit">Send Email</button>
                 </div>
             </div>
-            
         </form>
-
-        });
-
-        
-    }
-
+        });   
+    }*/
     //This function is for exit from the email page
-    handleLogout(e){
+    handleLogout(e) {
+        if (e) {
+            e.preventDefault();
+        }
+        Axios.get("http://localhost:8080/api/auth/logout", { withCredentials: true })
+            .then((req) => {
+                // Always provide voice feedback
+                this.text2speech("Log out successful");
+                this.props.ask_auth();
+            })
+            .catch((error) => {
+                console.error("Logout failed:", error);
+                this.text2speech("Logout failed, please try again.");
+                this.props.ask_auth();
+            });
+    }
+    
+    
+    /*handleLogout(e){
         if (e) {
             e.preventDefault();
         }
@@ -259,7 +357,7 @@ class Email extends React.Component {
             
         })
         this.props.ask_auth();
-    }
+    }*/
 
     //For handling inputs(mail to send, subject and message) from sending mail menu
     handleChange(e) {
@@ -291,6 +389,7 @@ class Email extends React.Component {
     
             if (req.data.code === SUCCESS) {
                 alert("✅ Email Sent Successfully!");
+                this.text2speech("Email sent successfully. To send email, say Send Email. To listen email, say Listen. And to exit, say Logout.");
             } else {
                 alert("❌ Error: " + (typeof req.data.detail === "string" ? req.data.detail : JSON.stringify(req.data.detail)));
             }
@@ -326,230 +425,154 @@ class Email extends React.Component {
 
     //This function ends the speech to text process and speech will be saved
     handleEnd(err, text) {
-
-        console.log(text)
-        if (!err) {
-            this.setState({
-                text: text
-            })
-
-        } else {
+        console.log("Speech recognition result:", text);
+    
+        if (err || !text || text.trim() === "") {
+            console.log("Speech error or no input detected.");
+            this.setState({ listening: false });
             return;
         }
-        this.setState({
-            listening: false
-        })
-        if (this.state.inboxEmail === true) { //When the user wants to listen any inbox mail
 
-            var option = text  //the user's speech
-
-            console.log(option)
-
-            if (option.toLowerCase() === "menu") {  //If users says the menu keyword, voice assistant tells the menu options
-                option = ""
-                this.setState({
-                    inboxEmail: false,
-                    text: ""
-                })
-                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+        if (this.state.readingInboxIndex && /^\d+$/.test(text)) {
+            const index = parseInt(text, 10);
+            if (index >= 0 && index < this.state.InboxMails.length) {
+              this.setState({ readingInboxIndex: false });
+              const selectedMail = this.state.InboxMails[index];
+              this.mailContent(selectedMail, 0);
+              // New: Read out the email details
+              const speechText = `Reading email from ${selectedMail.target}, subject ${selectedMail.subject}. ${selectedMail.content}`;
+              this.text2speech(speechText);
+              return;
+            } else {
+              this.text2speech(`Index ${text} is out of range. Please try again.`);
+              return;
             }
-            else if (option.toLowerCase() === "restart") {  //If users says the restart keyword, user can say the information again
-                option = ""
-                var speech = "You have " + this.state.InboxMails.length + "  emails."
+          }
 
-                this.state.InboxMails.map((item) => {
-                    speech = speech + "! . ! From " + item.target + "! . ! Subject " + item.subject
-                }) 
-
-                this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
-            }
-            else {
-                if(!isNaN(option)) {        //When the user says the index of the mail, voice assistant tells the content of the selected mail
-                    var mail = this.state.InboxMails[parseInt(option)  - 1]
-                    this.mailContent(mail, 0);
-                    this.text2speech("From: " + mail.target + "! . ! Subject:" + mail.subject + "! . ! Content:"  + mail.content);
-                } else {
-                    this.text2speech("I couldn't get that!");
-                } 
+          // --- Begin Sent Email Index Block ---
+        if (this.state.readingSentIndex && /^\d+$/.test(text)) {
+            const index = parseInt(text, 10);
+            if (index >= 0 && index < this.state.SentMails.length) {
+                this.setState({ readingSentIndex: false });
+                const selectedMail = this.state.SentMails[index];
+                this.mailContent(selectedMail, 1);
+                const speechText = `Reading sent email number ${String(index).padStart(2, '0')}. To: ${selectedMail.target}, Subject: ${selectedMail.subject}. ${selectedMail.content}`;
+                this.text2speech(speechText);
+                return;
+            } else {
+                this.text2speech(`Index ${text} is out of range. Please try again.`);
+                return;
             }
         }
-        
-        else if (this.state.sentEmail === true) {       //When the user wants to listen any sent mail
-            var option = text 
 
-            console.log(option)
+  
 
-            if (option.toLowerCase() === "menu") {  //If users says the menu keyword, voice assistant tells the menu options
-                option = ""
-                this.setState({
-                    sentEmail: false,
-                    text: ""
-                })
-                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
-            }
-            else if (option.toLowerCase() === "restart") {  //If users says the restart keyword, user can say the informations again
-                option = ""
-                var speech = "You have " + this.state.SentMails.length + "  emails."
-
-                this.state.SentMails.map((item) => {
-                    speech = speech + "! . ! To " + item.target + "! . ! Subject " + item.subject
-                }) 
-
-                this.text2speech(speech + "! . ! Say the index of email to listen. menu to return menu and restart to listen list of emails ")
-            }
-            else {
-                if (!isNaN(option)) {        //When the user says the index of the mail, voice assistant tells the content of the selected mail
-                    var mail = this.state.SentMails[parseInt(option)  - 1]
-                    this.mailContent(mail, 0);
-                    this.text2speech("From: " + mail.target + "! . ! Subject:" + mail.subject + "! . ! Content:"  + mail.content);
-                } else {
-                    this.text2speech("I couldn't get that!");
+        // ✅ Normalize input: Fix common misinterpretations
+        text = text.toLowerCase().trim()
+            .replace(/\s+/g, " ")         // Converts multiple spaces into a single space
+            .replace(/at the rate/g, "@") // Converts "at the rate" → "@"
+            .replace(/period/g, ".");     // Converts "period" → "."
+    
+        // ✅ Restart process
+        if (text === "restart") {
+            console.log("Restart command recognized.");
+            window.speechSynthesis.cancel(); // Cancel any ongoing utterance
+            this.setState({
+                step: 0,
+                email_to_send: "",
+                subject_to_send: "",
+                message_to_send: ""
+            });
+            this.text2speech("Restarting. Please say the recipient's email.");
+            return;
+        }
+        // ✅ Email Sending Process
+        if (this.state.sendEmail === true) {
+            if (this.state.step === 0) {
+                console.log("Captured recipient email:", text);
+                this.setState({ 
+                    email_to_send: text.replace(/\s+/g, ""), // ✅ Remove spaces in email
+                    step: 1 
+                }, () => { 
+                    this.text2speech("Got it. Now, say the subject.");
+                });
+            } 
+            else if (this.state.step === 1) {
+                /*console.log("Step 1 branch. Current email_for_registration:", this.state.email_for_registration);
+                if (this.state.email_for_registration) {
+                  console.log("Registration email already captured, ignoring duplicate input.");
+                  this.setState({ processingSpeech: false });
+                  return;
                 }
-                
+                console.log("Captured registration email:", text);
+                this.setState({ email_for_registration: text.replace(/\s+/g, ""), step: 2 }, () => {
+                  console.log("Step updated to 2: registration username prompt.");
+                  this.text2speech("Got it. Now, say your username.");
+                  this.setState({ processingSpeech: false });
+                });*/
+                console.log("Captured subject:", text);
+                    this.setState({ subject_to_send: text, step: 2 }, () => {
+                      console.log("Step updated to 2: message prompt.");
+                      this.text2speech("Got it. Now, say the message.");
+                     this.setState({ processingSpeech: false });
+                   });
+              }
+              
+            /*else if (this.state.step === 2) {
+                if (text === "end message") {
+                    console.log("Message confirmed:", this.state.message_to_send);
+                    this.text2speech(`You said, Email: ${this.state.email_to_send}, Subject: ${this.state.subject_to_send}, Message: ${this.state.message_to_send}. 
+                    If correct, say 'Submit'. Otherwise, say 'Restart'.`);
+                    this.setState({ step: 3 });
+                } else {
+                    this.setState((prevState) => ({
+                        message_to_send: prevState.message_to_send + " " + text.trim()  // ✅ Keeps spaces
+                    }));
+                }
+            }*/
+            else if (this.state.step === 2) {
+                console.log("Captured message:", text);
+                this.setState({ message_to_send: text, step: 3 }, () => {
+                this.text2speech(`You said, Email: ${this.state.email_to_send}, Subject: ${this.state.subject_to_send}, Message: ${this.state.message_to_send}. 
+                If correct, say 'Submit'. Otherwise, say 'Restart'.`);
+                    });
+            } 
+            else if (text === "submit") {
+                console.log("Submitting email...");
+                this.handleSendSubmit(null);
             }
-
-
         }
-        else if (this.state.sendEmail === true) {   //When the user wants to send an email
-            sendingInfo.push(text)          //All sending info are kept into this array
-            console.log(sendingInfo)
-
-            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "send") {  
-
-                //sendingInfo[0] = sendingInfo[0].replace(/ /g, "").slice(0, sendingInfo[0].indexOf("atgmail.com")) + "@gmail.com"
-
-                sendingInfo[0] = "mail.system.test123@gmail.com"  //Email is given direct to test our code
-
-               //The related local states are assigned to sending info
-                this.setState({
-                    email_to_send: sendingInfo[0],
-                    subject_to_send: sendingInfo[1].toLowerCase(),
-                    message_to_send: sendingInfo[2].toLowerCase(),
-                })
-
-                //Content of the input areas are changed
-                document.getElementById("address").value = this.state.email_to_send
-                document.getElementById("subject").value = this.state.subject_to_send
-                document.getElementById("message").value = this.state.message_to_send
-
-                //Voice assistant tells the all info saying from the user to be ensure the correctness
-                this.text2speech("If these sending information are correct, please say correct, if not please say restart to start over." 
-                + "! . !To:" + this.state.email_to_send + "! . !Subject:" + this.state.subject_to_send + "! . !Message:" + this.state.message_to_send)
-
-            }
-            //If users says the menu keyword, voice assistant tells the menu options
-            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "menu") {
-                sendingInfo = []
-                this.setState({
-                    sendEmail: false,
-                    text: ""
-                })
-                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
-
-
-            }
-            //If users says the restart keyword, user can say the informations again
-            else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "restart") {
-                sendingInfo = []
-                this.text2speech("Say address, subject, and message")
-            }
-
-            //If user says correct keyword, the email is send
-            else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "correct") {
-                sendingInfo = []
-                this.text2speech()
-                this.handleSendSubmit(null)
-
-                this.setState({
-                    email_to_send: "",
-                    subject_to_send: "",
-                    message_to_send: "",
-                })
-
-                document.getElementById("address").value = this.state.email_to_send
-                document.getElementById("subject").value = this.state.subject_to_send
-                document.getElementById("message").value = this.state.message_to_send
-                this.text2speech("Your email is sent successfully ! . !" + "say menu to return to menu or for new email say address, subject, and message and send to sent email")
-            }
-
-        }
-
+    
+        // ✅ Menu Handling
         else {
-            allText.push(this.state.text)
-            console.log(allText)
-            
-            if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "sendemail") { //If user choose the send mail option, send mail methods is called
-                console.log("send")
-                this.sendMail()
-
-                this.text2speech(`Please say the address to send email, subject, and the message respectively. Say send to send the email.
-                say restart to start over or say menu to return to menu`)
-
-                this.setState({
-                    sendEmail: true,
-                    sentEmail: false,
-                    inboxEmail: false
-                })
-                allText = []
+            if (text === "send email" || text === "send message") {
+                this.text2speech("Please say the recipient's email. You can say 'at the rate' for '@' and 'period' for '.'");
+                this.setState({ step: 0, sendEmail: true, inboxEmail: false, sentEmail: false }, () => {
+                     this.sendMail();
+                });
             }
-            else if (allText[allText.length - 1].toLowerCase() === "listen") {  //If user choose the listen mail option
-                this.text2speech("To listen to Inbox emails, say inbox, To listen to Sent emails, say sent.  You can say restart to start over.")
+            else if (text === "listen") {
+                this.text2speech("To listen to Inbox emails, say 'Inbox'. To listen to Sent emails, say 'Sent'. You can say 'Restart' to start over.");
             }
-            else if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "logout") {    //If user choose the logout option, log out methods is called
-                console.log("logout")
-                this.handleLogout(null)
+            else if (text === "inbox") {
+                // Call the inbox function and provide audio feedback.
+                this.inboxFunction();
+                this.text2speech("Inbox emails loaded.");
             }
-            else if (allText[allText.length - 1].toLowerCase() === "restart") {
-                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
-                allText = []
+            else if (text === "sent" || text=="send") {
+                // Call the sent emails function and provide audio feedback.
+                this.sentFunction();
+                this.text2speech("Sent emails loaded.");
             }
-            //When the user says inbox to listen an inbox mail
-            else if (allText[allText.length - 1].toLowerCase() === "inbox") {
-                this.inboxFunction()
-                var speech = "You have " + this.state.InboxMails.length + "  emails."
-
-                const list = this.state.InboxMails.map((item, index) => {
-                    speech = speech + "! . ! From " + item.target + "! . ! Subject " + item.subject
-                }) 
-
-                this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
-               
-                this.setState({
-                    sendEmail: false,
-                    sentEmail: false,
-                    inboxEmail: true
-                })
-
-                allText = []
-
+            else if (text === "logout") {
+                console.log("Logging out...");
+                this.handleLogout(null);
             }
-              //When the user says sent or send to listen an sent mail
-            else if (allText[allText.length - 1].toLowerCase() === "sent" || allText[allText.length - 1].toLowerCase() === "send") {
-                this.sentFunction()
-                var speech = "You have " + this.state.SentMails.length + "  emails."
-
-                const list = this.state.SentMails.map((item, index) => {
-                    speech = speech + "! . ! From " + item.target + "! . ! Subject " + item.subject
-                }) 
-
-                this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
-                this.setState({
-                    sendEmail: false,
-                    sentEmail: true,
-                    inboxEmail: false
-                })
-            }
-            //If the user says anything that is not in the menu
             else {
-                this.text2speech("Wrong Option, please say again")
-                allText = []
+                this.text2speech("Wrong option, please say again.");
             }
-
         }
-
-
     }
-
     render() {
 
          //Voice assistant informs the user about success login in the initial load
@@ -633,8 +656,67 @@ class Email extends React.Component {
                   </div>
 
                   <div className="mailcontent_div">
-                      {this.state.mailBody}
-                  </div>
+  {this.state.sendEmail ? (
+    <form className="form-horizontal" action="#forms" onSubmit={this.handleSendSubmit}>
+      <div className="form-group">
+        <div className="col-3 col-sm-12">
+          <label className="form-label" htmlFor="input-example-4"><h5>To: </h5></label>
+        </div>
+        <div className="col-9 col-sm-12">
+          <input
+            className="form-input"
+            id="address"
+            type="email"
+            placeholder="Email"
+            name="email_to_send"
+            value={this.state.email_to_send}
+            onChange={this.handleChange}
+          />
+        </div>
+      </div>
+      <div className="form-group">
+        <div className="col-3 col-sm-12">
+          <label className="form-label" htmlFor="input-example-5"><h5>Subject: </h5></label>
+        </div>
+        <div className="col-9 col-sm-12">
+          <input
+            className="form-input"
+            id="subject"
+            type="text"
+            placeholder="Subject"
+            name="subject_to_send"
+            value={this.state.subject_to_send}
+            onChange={this.handleChange}
+          />
+        </div>
+      </div>
+      <div className="form-group">
+        <div className="col-3 col-sm-12">
+          <label className="form-label" htmlFor="input-example-6"><h5>Message: </h5></label>
+        </div>
+        <div className="col-9 col-sm-12">
+          <textarea
+            className="form-input"
+            id="message"
+            placeholder="Textarea"
+            rows="3"
+            name="message_to_send"
+            value={this.state.message_to_send}
+            onChange={this.handleChange}
+          ></textarea>
+        </div>
+      </div>
+      <div className="form-group">
+        <div className="btn-group btn-group-block">
+          <button className="btn btn-lg" id="sendemail_button" type="submit">Send Email</button>
+        </div>
+      </div>
+    </form>
+  ) : (
+    this.state.mailBody
+  )}
+            </div>
+
 
               </div>
            
