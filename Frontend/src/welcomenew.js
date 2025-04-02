@@ -77,22 +77,6 @@ handleChange(e) {
 
 }
 
-/*validateEmail() {
-
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-    if (!emailPattern.test(this.state.email_for_registration)) {
-
-        this.setState({ emailError: "Invalid email format" });
-
-    } else {
-
-        this.setState({ emailError: "" });
-
-    }
-
-}*/
-
     validateEmail = () => {
 
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -117,40 +101,7 @@ handleChange(e) {
 
     };
 
-    
-
-    
-
-/*validateEmail = () => {
-
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        if (!emailPattern.test(this.state.email_for_registration)) {
-
-            this.setState({ emailError: "Invalid email format" });
-
-    } else {
-
-            this.setState({ emailError: "" });
-
-        }
-
-    };*/
-
-
-
 //This function converts the text to speech
-
-/*text2speech(text) {
-
-    synth.cancel()
-
-    var utterThis = new SpeechSynthesisUtterance(text);
-
-    synth.speak(utterThis);
-
-}*/
-
     text2speech(text) {
 
         if (window.speechSynthesis.speaking) {
@@ -514,17 +465,6 @@ handleEnd(err, text) {
 
 
 //Voice assistant welcomes the user in the initial load
-
-/*componentDidMount() {
-
-    this.setState({ initial: false }, () => {
-
-        this.text2speech("Welcome To The Voice Based Email System. Please hit the spacebar to listen to the voice assistant");
-
-    },500);
-
-}*/
-
 componentDidMount() {
 
     this.setState({ initial: false }, () => {
