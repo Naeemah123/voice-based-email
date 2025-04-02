@@ -136,54 +136,7 @@ class Email extends React.Component {
           }
         });
       }
-      
-    
-   /* inboxFunction() {
-    const list = this.state.InboxMails.map((item, index) => 
-    
-        <tr key={index} onClick={() => this.mailContent(item, 0)}>
-            <td>{item.target}</td>
-            <td>{item.subject}</td>
-        </tr>
-    );
-
-    this.setState({
-        mailsContent: list,
-        mail_list_header1: "From",
-        mail_list_header2: "Subject",
-        readingInboxIndex: true  // Set flag to wait for an index response
-    }, () => {
-        if (this.state.InboxMails.length > 0) {
-            const firstEmail = this.state.InboxMails[0];
-            const speechText = `Inbox emails loaded. You have ${this.state.InboxMails.length} emails. For example, the first email is from ${firstEmail.target} with subject ${firstEmail.subject}. Please say the index number of the email you want me to read.`;
-            this.text2speech(speechText);
-        } else {
-            this.text2speech("Inbox emails loaded but your inbox is empty.");
-            this.setState({ readingInboxIndex: false });
-        }
-    });
-}*/
-
-    /*inboxFunction() {
-        //This function is for listing mails that are received.
-        const list = this.state.InboxMails.map((item, index) => 
-     
-            <tr key={index} onClick={() => this.mailContent(item, 0)}>
-                <td>{item.target}</td>
-                <td>{item.subject}</td>
-            </tr>
-            
-        );
-        
-        this.setState({
-            mailsContent: list,
-            mail_list_header1: "From",
-            mail_list_header2: "Subject"
-        });
-
-    }*/
-
-    //This function shows the sent mails on the mails list section
+  //This function shows the sent mails on the mails list section
     sentFunction() {
         const list = this.state.SentMails.map((item, index) =>
           <tr key={index} onClick={() => this.mailContent(item, 1)}>
@@ -208,29 +161,6 @@ class Email extends React.Component {
           }
         });
       }
-      
-      
-    /*sentFunction() {
-
-        //This function is for listing mails that are sent.
-
-        const list = this.state.SentMails.map((item, index) =>
-
-            <tr key={index} onClick={() => this.mailContent(item, 1)}>
-                <td>{item.target}</td>
-                <td>{item.subject}</td>
-            </tr>
-
-        );
-
-        this.setState({
-            mailsContent: list,
-            mail_list_header1: "To",
-           mail_list_header2: "Subject"
-        });
-
-    }*/
-
     //This function is for displaying the content of the selected mail
     mailContent(item, id) {
 
@@ -274,58 +204,7 @@ class Email extends React.Component {
       }
       
     
-    /*sendMail() {
-
-        this.setState({
-            mailBody:               
-       <form className="form-horizontal" action="#forms" onSubmit={this.handleSendSubmit}>
-            <div className="form-group">
-            <div className="col-3 col-sm-12">
-                <label className="form-label" htmlFor="input-example-4"><h5>To: </h5></label>
-            </div>
-            <div className="col-9 col-sm-12">
-                            <input className="form-input" id="address"
-                                type="email"
-                                placeholder="Email"
-                                name="email_to_send"
-                                onChange={this.handleChange}
-                            />
-            </div>
-            </div>
-            <div className="form-group">
-            <div className="col-3 col-sm-12">
-                <label className="form-label" htmlFor="input-example-5"><h5>Subject: </h5></label>
-            </div>
-            <div className="col-9 col-sm-12">
-                            <input className="form-input" id="subject"
-                                type="subject"
-                                placeholder="Subject"
-                                name="subject_to_send"
-                                onChange={this.handleChange}/>
-            </div>
-            </div>
-            
-            <div className="form-group">
-            <div className="col-3 col-sm-12">
-                <label className="form-label" htmlFor="input-example-6"><h5>Message: </h5></label>
-            </div>
-            <div className="col-9 col-sm-12">
-                            <textarea className="form-input" id="message"
-                                placeholder="Textarea"
-                                rows="3"
-                                name="message_to_send"
-                                onChange={this.handleChange}></textarea>
-            </div>
-            </div>
-
-             <div className="form-group">
-                <div className="btn-group btn-group-block">
-                    <button className="btn btn-lg" id= "sendemail_button" type="submit">Send Email</button>
-                </div>
-            </div>
-        </form>
-        });   
-    }*/
+    
     //This function is for exit from the email page
     handleLogout(e) {
         if (e) {
@@ -343,23 +222,7 @@ class Email extends React.Component {
                 this.props.ask_auth();
             });
     }
-    
-    
-    /*handleLogout(e){
-        if (e) {
-            e.preventDefault();
-        }
-        Axios.get("/auth/logout").then((req) => {
-            if (req.data.code !== SUCCESS) {
-                alert(req.data.detail)
-            }
-            this.text2speech("Log out succesfull")
-            
-        })
-        this.props.ask_auth();
-    }*/
-
-    //For handling inputs(mail to send, subject and message) from sending mail menu
+ //For handling inputs(mail to send, subject and message) from sending mail menu
     handleChange(e) {
         this.setState({
             [e.target.name]: e.target.value
@@ -517,19 +380,6 @@ class Email extends React.Component {
                      this.setState({ processingSpeech: false });
                    });
               }
-              
-            /*else if (this.state.step === 2) {
-                if (text === "end message") {
-                    console.log("Message confirmed:", this.state.message_to_send);
-                    this.text2speech(`You said, Email: ${this.state.email_to_send}, Subject: ${this.state.subject_to_send}, Message: ${this.state.message_to_send}. 
-                    If correct, say 'Submit'. Otherwise, say 'Restart'.`);
-                    this.setState({ step: 3 });
-                } else {
-                    this.setState((prevState) => ({
-                        message_to_send: prevState.message_to_send + " " + text.trim()  // ✅ Keeps spaces
-                    }));
-                }
-            }*/
             else if (this.state.step === 2) {
                 console.log("Captured message:", text);
                 this.setState({ message_to_send: text, step: 3 }, () => {
