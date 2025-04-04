@@ -1,350 +1,170 @@
 import React from 'react';
-
 import './welcome.css';
-
 import Axios from 'axios';
-
 import { SUCCESS } from './error_codes';
-
 import Speech2Text from "./s2t.js";
-
 import Spell2Text from "./spell2text.js"
-
 var synth = window.speechSynthesis //for text to speech
-
 var allText = [] //Keeps the user sayings
 
 class Welcome extends React.Component {
-
 constructor() {
-
     super();
-
     this.state = {
-
         email: "",
-
         emailError: "",
-
         password: "",
-
         username: "",
-
         email_for_registration: "",
-
         password_for_registration: "",
-
         initial: true,
-
         text: "",
-
         listening: false,
-    
         count:0,
         step:0
-
     }
-
-
-
     //Methods have to be binded to be able to use
-
     this.handleChange = this.handleChange.bind(this);
-
     this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
-
     this.handleSignSubmit = this.handleSignSubmit.bind(this);
-
     this.handleClick = this.handleClick.bind(this);
-
     this.handleEnd = this.handleEnd.bind(this);
-
     this.handleStart = this.handleStart.bind(this);
-
 }
 
 
 
 //Input values are kept in the local states
-
 handleChange(e) {
-
     this.setState({
-
         [e.target.name]: e.target.value
-
     });
-
 }
 
-    validateEmail = () => {
-
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-    
-
-        this.setState((prevState) => {
-
+validateEmail = () => {
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    this.setState((prevState) => {
             const newEmailError = !emailPattern.test(prevState.email_for_registration)
-
                 ? "Invalid email format"
-
                 : "";
-
-    
-
             console.log("Updating Email Error:", newEmailError);  // ✅ Debugging
-
             return { emailError: newEmailError };
-
         });
-
     };
 
 //This function converts the text to speech
     text2speech(text) {
-
         if (window.speechSynthesis.speaking) {
-
             window.speechSynthesis.cancel();  // Stop any ongoing speech
-
         }
-
-    
-
         setTimeout(() => {
-
             var utterThis = new SpeechSynthesisUtterance(text);
-
             window.speechSynthesis.speak(utterThis);
-
         }, 500);  // Delay to ensure smooth playback
 
     }
 
-    
-
-
-
 //When login button is pressed, this method is called. It sends the login info to backend
-
 handleLoginSubmit(e) {
-
     if (e) {
-
         e.preventDefault();
-
     }
-
-
-
     console.log("Submitting login request with:", {
-
         address: this.state.email,
-
         password: this.state.password
-
     });
-
-
-
     Axios.post("http://localhost:8080/api/auth/login", {
-
         address: this.state.email,
-
         password: this.state.password
-
     }, { withCredentials: true })
-
     .then((req) => {
-
         console.log("Server response:", req.data);
-
-
-
         if (req.data.code === 200) {  // ✅ Ensure SUCCESS is correctly checked
-
             console.log("✅ Login successful, calling ask_auth()");
             this.text2speech("Login successful, pls hit the spacebar for instructions.");
             this.setState(
-
                 { email: "", password: "" },  // ✅ Clears login fields after success
-
                 () => this.props.ask_auth()  // ✅ Calls ask_auth AFTER state updates
-
             );
-
         } else {
-
             console.error("❌ Login failed:", req.data.detail);
-
             alert(req.data.detail);
-
             this.text2speech(req.data.detail);
-
-
-
             console.log("Resetting state...");
-
             this.setState({
-
                 email: "",
-
                 password: "",
-
                 email_for_registration: "",
-
                 username: "",
-
                 password_for_registration: ""
-
             });
-
-
-
             allText = [];
-
         }
-
     })
-
     .catch((error) => {
-
         console.error("Login request failed:", error);
-
         alert("An error occurred while logging in.");
-
     });
-
 }
-
-
-
-
-
-
 
 //When sign up button is pressed, this method is called. It sends the sign up info to backend
-
 handleSignSubmit(e) {
-
     if (e) {
-
         e.preventDefault();
-
     }
-
-    
-
     Axios.post("http://localhost:8080/api/auth/sign_in", { 
-
         address: this.state.email_for_registration, 
-
         username: this.state.username, 
-
         password: this.state.password_for_registration 
-
     })
-
-    
-
     .then((req) => {
-
         if (req.data.code === SUCCESS) {
-
             alert("✅ Sign-up successful! You can now log in.");
-
             this.text2speech("Sign-up successful! You can now log in.");
-
             this.setState({
-
                 email_for_registration: "",
-
                 username: "",
-
                 password_for_registration: ""
-
             });
-
         } else {
-
             alert("❌ Sign-up failed: " + req.data.detail);
-
             this.text2speech(req.data.detail);
-
         }
-
     })
-
     .catch((error) => {
-
         console.error("Sign-up error:", error);
-
         alert("❌ Sign-up failed. Please try again later.");
-
     });
-
 }
-
-
-
-
 
 //When user is pressed the space key, voice assistant starts to inform user about options
-
 handleClick(e) {
-
     //e.preventDefault();
-
     if (e.keyCode === 32) {
-
         this.text2speech(`To create a new account, please say "New account".
         To enter to your existing account, please say "log in".Then Say "Submit" for operation.
-
         Use the "Escape key", to start, and end your speech. You can say "restart" to start over.`)
-
     }
-
 }
-
-
 
 //when the page is loaded
-
 componentDidMount() {
-
     document.addEventListener('keypress', this.handleClick)    
-
 }
-
-
 
 componentWillUnmount() {
-
     synth.cancel()
-
     document.removeEventListener('keypress', this.handleClick)
-
 }
-
-
 
 //This function starts the speech to text process
-
 handleStart() {
-
     this.setState({
-
         listening: true
-
     })
-
     synth.cancel()
-
 }
-
-
-
+    
 //This function ends the speech to text process and speech will be saved
 handleEnd(err, text) {
   console.log("Speech recognition result:", text);
@@ -377,7 +197,6 @@ handleEnd(err, text) {
     }
     return;
     }
-
       if (text === "restart") {
           this.setState({
               step: 0,
@@ -460,50 +279,26 @@ handleEnd(err, text) {
   }, 100);
 }
 
-
-
-
-
 //Voice assistant welcomes the user in the initial load
 componentDidMount() {
-
     this.setState({ initial: false }, () => {
-
         setTimeout(() => {
-
             this.text2speech("Welcome To The Voice Based Email System. Please hit the spacebar to listen to the voice assistant");
-
         }, 500);
-
     });
-
     //Ensure spacebar listener is always attached
-
     document.addEventListener("keydown", this.handleClick);
-
 }
 
 
 
 render() {
-
-   
-
-    return (
-
-
-
+   return (
         <div className="page">  
-
-                
-
-            <div className="logo"></div>
-
-            <div className="header">
-
-                <h2>Welcome To The Voice Based Email System</h2>
-
-            </div>
+        <div className="logo"></div>
+        <div className="header">
+        <h2>Welcome To The Voice Based Email System</h2>
+        </div>
 
 
 
