@@ -77,34 +77,23 @@ class Speech2Text extends React.Component {
     this.recognition.onstart = () => {
       console.log("Listening!")
     }
-
-    /*this.recognition.onresult = (event) => {
-        var transcript = event.results[0][0].transcript
-        this.setState({
-          listening: false
-        })
-        this.props.onEnd(null, transcript)
-    }*/
-        this.recognition.onresult = (event) => {
-          console.log("Full recognition event:", event);
-          const transcript = event.results[0][0].transcript.trim();
+    this.recognition.onresult = (event) => {
+      console.log("Full recognition event:", event);
+      const transcript = event.results[0][0].transcript.trim();
       
-          // Prevent repeating the last recognized phrase
-          if (transcript !== this.state.text) {
+      // Prevent repeating the last recognized phrase
+      if (transcript !== this.state.text) {
               this.setState({ text: transcript, listening: false });
               this.props.onEnd(null, transcript);
-          } else {
+      } else {
               console.log("Duplicate input detected, ignoring...");
           }
       };
-
-      
-      
-
     this.recognition.onerror = event => {
       this.props.onEnd(event.error, null)
     }
   }
+ 
   render() {
     return (<div>
     </div>);
