@@ -222,6 +222,7 @@ class Email extends React.Component {
                 this.props.ask_auth();
             });
     }
+
  //For handling inputs(mail to send, subject and message) from sending mail menu
     handleChange(e) {
         this.setState({
@@ -361,18 +362,6 @@ class Email extends React.Component {
                 });
             } 
             else if (this.state.step === 1) {
-                /*console.log("Step 1 branch. Current email_for_registration:", this.state.email_for_registration);
-                if (this.state.email_for_registration) {
-                  console.log("Registration email already captured, ignoring duplicate input.");
-                  this.setState({ processingSpeech: false });
-                  return;
-                }
-                console.log("Captured registration email:", text);
-                this.setState({ email_for_registration: text.replace(/\s+/g, ""), step: 2 }, () => {
-                  console.log("Step updated to 2: registration username prompt.");
-                  this.text2speech("Got it. Now, say your username.");
-                  this.setState({ processingSpeech: false });
-                });*/
                 console.log("Captured subject:", text);
                     this.setState({ subject_to_send: text, step: 2 }, () => {
                       console.log("Step updated to 2: message prompt.");
