@@ -2,14 +2,12 @@ const {createHash} = require('crypto');
 const {pool} = require("./db.js")
 const {UNEXPECTED, SUCCESS, NOT_FOUND, NOT_AUTH} = require("./error_codes.js")
 
-
 //SHA256 function for hashing passwords
 function computeSHA256(str) {
   const hash = createHash('sha256');
   hash.write(str)
   return hash.digest('hex');
 }
-
 
 //Sign in function to create new account
 exports.sign_in = function(req, response) {
@@ -96,10 +94,6 @@ exports.login = function(req, response) {
     });
 };
 
-
-
-
-
 //Function to check if user authenticated
 exports.fetch_user = function(req, response) {
     console.log("🔍 Checking session:", req.session);  // ✅ Debugging
@@ -122,7 +116,6 @@ exports.fetch_user = function(req, response) {
         });
     }
 };
-
 
 //Delete the request senders account
 exports.delete_user = function(req, response) {
