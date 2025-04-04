@@ -1,8 +1,10 @@
 {
-    "build": {
-      "base": "node",
-      "cmd": "cd Backend && npm install"
-    },
-    "start": "cd Backend && node app.js"
+  "build": {
+    "base": "node",
+    "cmd": "cd Backend && npm install"
+  },
+  "start": {
+    "cmd": "cd Backend && node app.js"
   }
-  
+}
+s
