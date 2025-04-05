@@ -1,7 +1,7 @@
 // eslint-disable-no-redeclare
 import React from 'react';
 import './email.css';
-import Axios from 'axios';
+import axios from 'axios';
 import { SUCCESS } from './error_codes.js';
 import Speech2Text from "./s2t.js";
 import Spell2Text from "./spell2text.js"
