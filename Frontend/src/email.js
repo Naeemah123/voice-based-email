@@ -94,7 +94,7 @@ class Email extends React.Component {
 
     //This function is for receiving sent emails from backend
     get_emails_sent() {
-        Axios.post("http://localhost:8080/api/email/fetch_emails", { "search": "SENT" }, { withCredentials: true })
+        Axios.post(`${process.env.REACT_APP_API_URL}/api/email/fetch_emails`, { "search": "SENT" }, { withCredentials: true })
             .then((req) => {
                 console.log("📨 Sent Emails Response:", req.data);  // ✅ Debugging
     
