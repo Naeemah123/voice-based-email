@@ -116,8 +116,7 @@ handleSignSubmit(e) {
     address: this.state.email_for_registration, 
     username: this.state.username, 
     password: this.state.password_for_registration 
-}, { withCredentials: true });
-
+}, { withCredentials: true })
     .then((req) => {
         if (req.data.code === SUCCESS) {
             alert("✅ Sign-up successful! You can now log in.");
