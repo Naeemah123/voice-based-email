@@ -247,7 +247,7 @@ class Email extends React.Component {
     subject: this.state.subject_to_send,
     to: this.state.email_to_send,
     content: this.state.message_to_send
-}, { withCredentials: true });
+}, { withCredentials: true })
         .then((req) => {
             console.log("Server response:", req.data);  // ✅ Debugging
     
