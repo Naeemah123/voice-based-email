@@ -1,7 +1,7 @@
 import React from 'react';
 import Welcome from "./welcome"
 import Email from "./email"
-import Axios from "axios"
+import axios from "axios"
 import {SUCCESS} from "./error_codes"
 
 class App extends React.Component {
