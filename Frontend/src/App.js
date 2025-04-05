@@ -13,7 +13,7 @@ class App extends React.Component {
     this.check_auth = this.check_auth.bind(this);
   }
   check_auth() {
-    axios.get(`${process.env.REACT_APP_API_URL}/api/auth/fetch_user`, {withCredentials: true,});
+    axios.get(`${process.env.REACT_APP_API_URL}/api/auth/fetch_user`, {withCredentials: true,})
         .then((req) => {
             console.log("Auth Check Response:", req.data);  // ✅ Debugging
 
