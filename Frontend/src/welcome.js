@@ -73,10 +73,10 @@ handleLoginSubmit(e) {
         address: this.state.email,
         password: this.state.password
     });
-    Axios.post("http://localhost:8080/api/auth/login", {
-        address: this.state.email,
-        password: this.state.password
-    }, { withCredentials: true })
+    Axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+    address: this.state.email,
+    password: this.state.password
+}, { withCredentials: true })
     .then((req) => {
         console.log("Server response:", req.data);
         if (req.data.code === 200) {  // ✅ Ensure SUCCESS is correctly checked
@@ -112,11 +112,12 @@ handleSignSubmit(e) {
     if (e) {
         e.preventDefault();
     }
-    Axios.post("http://localhost:8080/api/auth/sign_in", { 
-        address: this.state.email_for_registration, 
-        username: this.state.username, 
-        password: this.state.password_for_registration 
-    })
+    Axios.post(`${process.env.REACT_APP_API_URL}/api/auth/sign_in`, { 
+    address: this.state.email_for_registration, 
+    username: this.state.username, 
+    password: this.state.password_for_registration 
+}, { withCredentials: true });
+
     .then((req) => {
         if (req.data.code === SUCCESS) {
             alert("✅ Sign-up successful! You can now log in.");
