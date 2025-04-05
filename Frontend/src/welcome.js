@@ -73,7 +73,7 @@ handleLoginSubmit(e) {
         address: this.state.email,
         password: this.state.password
     });
-    Axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
     address: this.state.email,
     password: this.state.password
 }, { withCredentials: true })
@@ -112,7 +112,7 @@ handleSignSubmit(e) {
     if (e) {
         e.preventDefault();
     }
-    Axios.post(`${process.env.REACT_APP_API_URL}/api/auth/sign_in`, { 
+    axios.post(`${process.env.REACT_APP_API_URL}/api/auth/sign_in`, { 
     address: this.state.email_for_registration, 
     username: this.state.username, 
     password: this.state.password_for_registration 
