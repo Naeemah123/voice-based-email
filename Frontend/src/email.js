@@ -94,7 +94,7 @@ class Email extends React.Component {
 
     //This function is for receiving sent emails from backend
     get_emails_sent() {
-        Axios.post(`${process.env.REACT_APP_API_URL}/api/email/fetch_emails`, { "search": "SENT" }, { withCredentials: true })
+        axios.post(`${process.env.REACT_APP_API_URL}/api/email/fetch_emails`, { "search": "SENT" }, { withCredentials: true })
             .then((req) => {
                 console.log("📨 Sent Emails Response:", req.data);  // ✅ Debugging
     
@@ -210,7 +210,7 @@ class Email extends React.Component {
         if (e) {
             e.preventDefault();
         }
-        Axios.get(`${process.env.REACT_APP_API_URL}/api/auth/logout`, { withCredentials: true })
+        axios.get(`${process.env.REACT_APP_API_URL}/api/auth/logout`, { withCredentials: true })
             .then((req) => {
                 // Always provide voice feedback
                 this.text2speech("Log out successful");
@@ -243,7 +243,7 @@ class Email extends React.Component {
             content: this.state.message_to_send
         },{ withCredentials: true });
     
-        Axios.post(`${process.env.REACT_APP_API_URL}/api/email/send_email`, {
+        axios.post(`${process.env.REACT_APP_API_URL}/api/email/send_email`, {
     subject: this.state.subject_to_send,
     to: this.state.email_to_send,
     content: this.state.message_to_send
