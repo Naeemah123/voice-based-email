@@ -1,6 +1,6 @@
 import React from 'react';
 import './welcome.css';
-import Axios from 'axios';
+import axios from 'axios';
 import { SUCCESS } from './error_codes';
 import Speech2Text from "./s2t.js";
 import Spell2Text from "./spell2text.js"
