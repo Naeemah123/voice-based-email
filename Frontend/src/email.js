@@ -243,11 +243,11 @@ class Email extends React.Component {
             content: this.state.message_to_send
         },{ withCredentials: true });
     
-        Axios.post("http://localhost:8080/api/email/send_email", {
-            subject: this.state.subject_to_send,
-            to: this.state.email_to_send,
-            content: this.state.message_to_send
-        },{ withCredentials: true })
+        Axios.post(`${process.env.REACT_APP_API_URL}/api/email/send_email`, {
+    subject: this.state.subject_to_send,
+    to: this.state.email_to_send,
+    content: this.state.message_to_send
+}, { withCredentials: true });
         .then((req) => {
             console.log("Server response:", req.data);  // ✅ Debugging
     
