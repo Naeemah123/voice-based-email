@@ -37,7 +37,15 @@ app.get('/api/auth/delete_user', delete_user);      //null
 app.post('/api/email/send_email', send_email);      //accepts(JSON) subject, to, content
 app.post('/api/email/fetch_emails', fetch_emails);  //null
 //port number is to be changed according to deployed platform
+app.get('/test-db', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT NOW()');
+        res.json({ success: true, time: result.rows[0] });
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ success: false, error: 'Database connection failed' });
+    }
+});
 const port = 8080
-
 //Start listening requests
 app.listen(port, () => console.log(`A listening on port ${port}!`))
