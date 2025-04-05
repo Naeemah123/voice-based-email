@@ -77,7 +77,7 @@ class Email extends React.Component {
 
     //This function is for receiving inbox emails from backend
     get_emails() {
-        Axios.post("http://localhost:8080/api/email/fetch_emails", { "search": "INBOX" },{ withCredentials: true })
+       axios.post(`${process.env.REACT_APP_API_URL}/api/email/fetch_emails`, { search: "INBOX" }, { withCredentials: true })
             .then((req) => {
                 if (req.data.code === SUCCESS) {
                     this.setState({
