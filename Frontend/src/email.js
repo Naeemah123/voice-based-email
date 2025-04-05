@@ -210,7 +210,7 @@ class Email extends React.Component {
         if (e) {
             e.preventDefault();
         }
-        Axios.get("http://localhost:8080/api/auth/logout", { withCredentials: true })
+        Axios.get(`${process.env.REACT_APP_API_URL}/api/auth/logout`, { withCredentials: true })
             .then((req) => {
                 // Always provide voice feedback
                 this.text2speech("Log out successful");
