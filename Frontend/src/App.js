@@ -1,5 +1,5 @@
 import React from 'react';
-import Welcome from "./welcomenew"
+import Welcome from "./welcome"
 import Email from "./email"
 import Axios from "axios"
 import {SUCCESS} from "./error_codes"
