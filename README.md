@@ -106,15 +106,15 @@ Starting the Frontend: In the frontend directory, run: npm start.
 
 2. Voice Commands: 
 
-• Activation: Press the Escape key to toggle speech recognition. 
+    • Activation: Press the Escape key to toggle speech recognition. 
 
-• Menu Navigation: 
+    • Menu Navigation: 
      - Say "New account" or "Login" to begin account setup or authentication.  
      - Once logged in, say "Send Email" to compose a new email, or "Listen" to browse your Inbox and Sent emails.  
      - Use index numbers (e.g., "00" for the first email) when prompted.  
      - Say "Logout" to exit your account. 
 
-• Audio Prompts: The system provides audio instructions to guide you through each process.
+    • Audio Prompts: The system provides audio instructions to guide you through each process.
 
 
 3. Manual Inputs (Optional): Standard HTML forms are available for users who prefer typing over voice commands.
