@@ -42,14 +42,20 @@ This project is a custom email system that uses fake email addresses (i.e., not 
 
 ### Frontend: 
 • React 
+
 • Axios 
+
 • Spectre.css (UI Framework) 
+
 • Browser Web Speech APIs (SpeechRecognition & SpeechSynthesis)
 
 ### Backend:
 • Node.js
+
 • Express
+
 • PostgreSQL (via the pg module) 
+
 • Session management with express-session
 
 
@@ -57,19 +63,24 @@ This project is a custom email system that uses fake email addresses (i.e., not 
 
 Prerequisites: 
 • Node.js (version 12+ recommended) 
-• PostgreSQL database 
+
+• PostgreSQL database
+
 • npm package manager
 
 ## Installation Steps:
 
 1. Clone the Repository: 
 git clone <repository-url> 
+
 cd <repository-directory>
 
 
 2. Backend Setup: 
 • Navigate to the backend folder: cd backend 
+
 • Install backend dependencies: npm install 
+
 • Create a .env file in the backend directory with the following environment variables:        DB_USER=your_db_username DB_PASSWORD=your_db_password DB_HOST=your_db_host DB_NAME=your_db_name DB_PORT=your_db_port SESSION_SECRET=your_session_secret 
 • Ensure your PostgreSQL database is running and that the required tables (users, sent_emails, received_emails) exist.
 
