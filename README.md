@@ -1,17 +1,76 @@
-# Voice-Based-Email-System
-Voice based email system for visually impaired people
+##Voice-Based Email System
 
-We live with disabled people around us. For them, life is full of obstacles. Some efforts are being made to make the lives of people with disabilities easier. For these people, special technologies are being produced, or new features are added to existing technologies. This has started to appear in web and mobile applications. Mobile and web applications should be made available to every kind of people, including people with disabilities.
+A web application designed for visually challenged users, enabling them to create accounts, log in, send, and read emails using voice commands. The system leverages speech-to-text and text-to-speech capabilities, allowing users to navigate and operate the app with simple voice commands and the Escape key to start/stop speech recognition.
 
-The aim of this project comes from this. In this project, it is planned to create a voice-based email system for visually impaired people. This email system will be a web-based application and used to detect and process users' voices. The functions that the application will have given below:
+Overview
 
-- Sending email: The application will record the user's voice and convert it into text.
-- Receiving email: The application will convert the received email from text to voice.
-- Menu: The application will have a menu that contains the functions it has. Thus, users can select the actions they want to do by using the menu.
-- Interface: In addition, the application will have an interface designed to send and receive emails.
+This project is a custom email system that uses fake email addresses (i.e., not connected to Gmail, Yahoo, etc.). All account data and emails are stored in a PostgreSQL database. The key features include:
 
-The application must have some capabilities to perform these actions. For example, for sending or receiving mail, speech to text conversion, text to speech conversion and audio
-playback; and for selecting options from the menu, some trigger mechanism or keyword recognition process will be necessary.
+• Voice-Activated Interface: Users navigate and perform operations (login, sign up, send/read emails) using voice commands. • Speech-to-Text & Text-to-Speech: Converts spoken commands into text for processing and reads out instructions and email content. • Session Management: Ensures persistent login sessions using server-managed sessions. • Database-Backed Email Storage: Sent and received emails are stored in separate database tables for efficient management. • Frontend and Backend Separation: The project is organized into two folders: frontend and backend.
+
+Features
+
+Account Management: • Sign Up: Create a new account using voice commands. • Login: Log in using voice commands with email and password input.
+
+Voice Navigation: • Activation: Use the Escape key to toggle speech recognition. • Menu Options: Users can say commands such as "Send Email", "Listen", "Inbox", "Sent", and "Logout".
+
+Email Operations: • Send Emails: Fill out a form using voice commands to send emails. • Read Emails: Browse and read Inbox and Sent emails using voice-directed index selection.
+
+Database Integration: • Uses PostgreSQL for persisting user accounts and email data.
+
+Technologies Used
+
+Frontend: • React • Axios • Spectre.css (UI Framework) • Browser Web Speech APIs (SpeechRecognition & SpeechSynthesis)
+
+Backend: • Node.js • Express • PostgreSQL (via the pg module) • Session management with express-session and connect-pg-simple
+
+Folder Structure
+
+project-root/ ├── frontend/ │   ├── public/ │   │   └── index.html │   └── src/ │       ├── app.js │       ├── email.js │       ├── email.css │       ├── error_codes.js │       ├── index.js │       ├── s2t.js │       ├── spell2text.js │       ├── welcome.css │       └── welcomenew.js └── backend/ ├── app.js └── src/ ├── auth.js ├── db.js ├── email.js └── error_codes.js
+
+Setup and Installation
+
+Prerequisites: • Node.js (version 12+ recommended) • PostgreSQL database • npm package manager
+
+Installation Steps:
+
+1. Clone the Repository: git clone <repository-url> cd <repository-directory>
+
+
+2. Backend Setup: • Navigate to the backend folder: cd backend • Install backend dependencies: npm install • Create a .env file in the backend directory with the following environment variables: DB_USER=your_db_username DB_PASSWORD=your_db_password DB_HOST=your_db_host DB_NAME=your_db_name DB_PORT=your_db_port SESSION_SECRET=your_session_secret • Ensure your PostgreSQL database is running and that the required tables (users, sent_emails, received_emails) exist.
+
+
+3. Frontend Setup: • Open a new terminal window/tab and navigate to the frontend folder: cd frontend • Install frontend dependencies: npm install
+
+
+
+Running the Application
+
+Starting the Backend Server: From the backend directory, run: node app.js The server will start and listen on port 8080 (or your configured port).
+
+Starting the Frontend: In the frontend directory, run: npm start This command starts the React development server, typically available at http://localhost:3000.
+
+Usage
+
+1. Launch the Application: Open the frontend URL in your browser.
+
+
+2. Voice Commands: • Activation: Press the Escape key to toggle speech recognition. • Menu Navigation: - Say "New account" or "Login" to begin account setup or authentication. - Once logged in, say "Send Email" to compose a new email, or "Listen" to browse your Inbox and Sent emails. - Use index numbers (e.g., "00" for the first email) when prompted. - Say "Logout" to exit your account. • Audio Prompts: The system provides audio instructions to guide you through each process.
+
+
+3. Manual Inputs (Optional): Standard HTML forms are available for users who prefer typing over voice commands.
+
+
+
+License
+
+(Include license information if applicable.)
+
+
+---
+
+You can now paste this entire content into your README.md file on GitHub.
+
 
 ## Screenshots from the application:
 ### Login Page
