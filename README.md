@@ -91,6 +91,13 @@ cd <repository-directory>
 
 • Install frontend dependencies: npm install
 
+• Create a .env file inside the frontend folder and define the following variable:
+
+   REACT_APP_API_URL=http://localhost:8080
+
+   -Replace http://localhost:8080 with your backend server’s actual URL if hosted remotely.
+
+   -This allows Axios to send requests to the correct backend URL during development.
 
 
 Running the Application
