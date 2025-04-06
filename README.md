@@ -82,11 +82,13 @@ cd <repository-directory>
 • Install backend dependencies: npm install 
 
 • Create a .env file in the backend directory with the following environment variables:        DB_USER=your_db_username DB_PASSWORD=your_db_password DB_HOST=your_db_host DB_NAME=your_db_name DB_PORT=your_db_port SESSION_SECRET=your_session_secret 
+
 • Ensure your PostgreSQL database is running and that the required tables (users, sent_emails, received_emails) exist.
 
 
 3. Frontend Setup: 
 • Open a new terminal window/tab and navigate to the frontend folder: cd frontend 
+
 • Install frontend dependencies: npm install
 
 
@@ -108,7 +110,8 @@ Starting the Frontend: In the frontend directory, run: npm start.
      - Say "New account" or "Login" to begin account setup or authentication.  
      - Once logged in, say "Send Email" to compose a new email, or "Listen" to browse your Inbox and Sent emails.  
      - Use index numbers (e.g., "00" for the first email) when prompted.  
-     - Say "Logout" to exit your account. • Audio Prompts: The system provides audio instructions to guide you through each process.
+     - Say "Logout" to exit your account. 
+• Audio Prompts: The system provides audio instructions to guide you through each process.
 
 
 3. Manual Inputs (Optional): Standard HTML forms are available for users who prefer typing over voice commands.
