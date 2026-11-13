@@ -1,0 +1,9 @@
+{
+  "build": {
+    "base": "node",
+    "cmd": "cd Backend && npm install"
+  },
+  "start": {
+    "cmd": "cd Backend && node app.js"
+  }
+}
